@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Action Plan Progress Widget</title>
+
+  <style>
+    :root{
+      --title-blue:#1f4bd8;
+      --gray:#9e9e9e;
+      --stripe1:#4f76ff;
+      --stripe2:#3f66f0;
+      --h:26px;
+    }
+
+    body{
+      margin:0;
+      background:transparent;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .ap-wrap{max-width:920px}
+
+    .ap-title{
+      color:var(--title-blue);
+      font-weight:900;
+      letter-spacing:.08em;
+      font-size:34px;
+      line-height:1.1;
+      text-transform:uppercase;
+      margin:0 0 10px 0;
+    }
+
+    .ap-bar{
+      width:100%;
+      height:var(--h);
+      background:var(--gray);
+      overflow:hidden;
+    }
+
+    .ap-fill{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      padding-right:10px;
+      box-sizing:border-box;
+
+      background-image: repeating-linear-gradient(
+        -45deg,
+        var(--stripe1) 0,
+        var(--stripe1) 12px,
+        var(--stripe2) 12px,
+        var(--stripe2) 24px
+      );
+
+      background-size:48px 48px;
+      animation:apStripes 1.2s linear infinite;
+      transition:width 700ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    @keyframes apStripes{
+      0%{background-position:0 0}
+      100%{background-position:48px 0}
+    }
+
+    .ap-pct{
+      color:#fff;
+      font-weight:800;
+      font-size:16px;
+      text-shadow:0 1px 0 rgba(0,0,0,.12);
+      user-select:none;
+    }
+
+    .ap-note{
+      margin-top:6px;
+      text-align:right;
+      color:var(--title-blue);
+      font-style:italic;
+      font-size:14px;
+    }
+
+    @media (max-width:520px){
+      .ap-title{font-size:26px}
+      .ap-note{font-size:12px}
+      :root{--h:22px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ap-wrap">
+    <div class="ap-title">ACTION PLAN PROGRESS</div>
+
+    <div class="ap-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="ap-fill" id="fill" style="width:0%">
+        <div class="ap-pct" id="pct">0%</div>
+      </div>
+    </div>
+
+    <div class="ap-note">
+      Represents a total of in progress and completed action items
+    </div>
+  </div>
+
+  <script>
+    // Published Google Sheet (yours)
+    const PUBLISHED_BASE =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5PIUxFOuoynIOh5LaVtzTgAj6HFxSFDPK2b6rjRjEL0SWWSUVBMEa6vOmq9Aw2tuQoWLp5Bhgcw0G/pubhtml";
+
+    // Read B2 from first tab
+    const CSV_URL =
+      PUBLISHED_BASE.replace(/\/pubhtml.*$/,"/pub") +
+      "?output=csv&gid=0&single=true&range=B2";
+
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+    function setProgress(p){
+      const pct = clamp(Number(p), 0, 100);
+      document.getElementById("fill").style.width = pct + "%";
+      document.getElementById("pct").textContent = Math.round(pct) + "%";
+    }
+
+    async function fetchProgress(){
+      try{
+        const res = await fetch(CSV_URL + "&t=" + Date.now(), { cache:"no-store" });
+        const text = (await res.text()).replace(/"/g,"").trim();
+        const num = parseFloat(text.replace("%",""));
+        if(Number.isFinite(num)) setProgress(num);
+      }catch(e){
+        console.warn("Failed to load progress", e);
+      }
+    }
+
+    fetchProgress();
+    setInterval(fetchProgress, 60000);
+  </script>
+</body>
+</html>
