@@ -39,21 +39,44 @@
       overflow:hidden;
     }
 
-    .ap-fill{
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      padding-right:10px;
-      box-sizing:border-box;
+.ap-fill{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  padding-right:10px;
+  box-sizing:border-box;
 
-      background-image: repeating-linear-gradient(
-        -45deg,
-        var(--stripe1) 0,
-        var(--stripe1) 12px,
-        var(--stripe2) 12px,
-        var(--stripe2) 24px
-      );
+  /* cleaner diagonal stripes */
+  background-image: linear-gradient(
+    135deg,
+    var(--stripe1) 0%,
+    var(--stripe1) 25%,
+    var(--stripe2) 25%,
+    var(--stripe2) 50%,
+    var(--stripe1) 50%,
+    var(--stripe1) 75%,
+    var(--stripe2) 75%,
+    var(--stripe2) 100%
+  );
+
+  /* IMPORTANT: set a square tile so stripes repeat cleanly */
+  background-size: 28px 28px;
+
+  /* animate the pattern */
+  animation: apStripes 0.9s linear infinite;
+
+  transition: width 700ms cubic-bezier(.2,.8,.2,1);
+
+  /* helps rendering on some browsers */
+  transform: translateZ(0);
+}
+
+@keyframes apStripes{
+  0%   { background-position: 0 0; }
+  100% { background-position: 28px 28px; }
+}
+
 
       background-size:48px 48px;
       animation:apStripes 1.2s linear infinite;
